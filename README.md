@@ -17,3 +17,5 @@ VPN_USERNAME=username
 VPN_PASSWORD=password  
 VPN_COUNTRY=AU  
 ```
+
+Credits to https://gitlab.com/mediaguides/media-install-script for the initial docker setup and post install scripts.
