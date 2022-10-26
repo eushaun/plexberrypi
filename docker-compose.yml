@@ -1,0 +1,119 @@
+---
+version: "2.1"
+services:
+  transmission:
+    image: haugene/transmission-openvpn
+    container_name: transmission
+    cap_add:
+      - NET_ADMIN
+    environment:
+      - OPENVPN_PROVIDER=${VPN_PROVIDER}
+      - OPENVPN_USERNAME=${VPN_USERNAME}
+      - OPENVPN_PASSWORD=${VPN_PASSWORD}
+      - NORDVPN_COUNTRY=${VPN_COUNTRY}
+      - TRANSMISSION_DOWNLOAD_DIR=/storage/downloads
+      - TRANSMISSION_SEED_QUEUE_ENABLED=true
+      - LOCAL_NETWORK=192.168.0.0/24
+      - TZ=Australia/Sydney
+    volumes:
+      - ${MOUNT_POINT}/downloads:/storage/downloads
+      - ${MOUNT_POINT}/config/transmission/data:/data
+      - ${MOUNT_POINT}/config/transmission:/config
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+    ports:
+      - 9091:9091
+      - 9117:9117
+      - 8989:8989
+      - 8990:8989
+      - 7878:7878
+    restart: unless-stopped
+    
+  jackett:
+    image: lscr.io/linuxserver/jackett:latest
+    container_name: jackett
+    depends_on:
+      - transmission-openvpn
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Australia/Sydney
+    network_mode: "container:transmission"
+    volumes:
+      - ${MOUNT_POINT}/config/jackett:/config
+    #ports:
+    #  - 9117:9117
+    restart: unless-stopped
+  
+  sonarr-tv:
+    image: lscr.io/linuxserver/sonarr:latest
+    container_name: sonarr-tv
+    depends_on:
+      - transmission-openvpn
+    environment:
+        - PUID=1000
+        - PGID=1000
+        - TZ=Australia/Sydney
+    network_mode: "container:transmission"
+    volumes:
+        - ${MOUNT_POINT}/config/sonarr-tv:/config
+        - ${MOUNT_POINT}:/storage
+    #ports:
+    #   - 8989:8989
+    restart: unless-stopped
+
+
+  radarr:
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: radarr
+    depends_on:
+      - transmission-openvpn
+    environment:
+        - PUID=1000
+        - PGID=1000
+        - TZ=Australia/Sydney
+    network_mode: "container:transmission"
+    volumes:
+        - ${MOUNT_POINT}/config/radarr:/config
+        - ${MOUNT_POINT}:/storage
+    #ports:
+    #    - 7878:7878
+    restart: unless-stopped
+
+  plex:
+    image: ghcr.io/linuxserver/plex:arm32v7-latest 
+    container_name: plex
+    network_mode: host
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Australia/Sydney
+      - VERSION=docker
+      - PLEX_CLAIM=claim-HDLnBqPD8Tt5KhyNsP6v
+    volumes:
+      - ${MOUNT_POINT}/config/plex:/config
+      - ${MOUNT_POINT}/media/tv:/tv
+      - ${MOUNT_POINT}/media/movies:/movies
+      - ${MOUNT_POINT}/media/anime:/anime
+    restart: unless-stopped
+
+  watchtower:
+    image: containrrr/watchtower
+    container_name: watchtower
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  flaresolverr:
+    # DockerHub mirror flaresolverr/flaresolverr:latest
+    image: ghcr.io/flaresolverr/flaresolverr:latest
+    container_name: flaresolverr
+    environment:
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - LOG_HTML=${LOG_HTML:-false}
+      - CAPTCHA_SOLVER=${CAPTCHA_SOLVER:-none}
+      - TZ=Europe/London
+    ports:
+      - "${PORT:-8191}:8191"
+    restart: unless-stopped 
