@@ -8,7 +8,7 @@ Docker compose file contains containers for jackett, flaresolverr, sonarr, radar
 
 Sonarr, radarr and jackett are routed through to a vpn using transmission-openvpn, which is why the port numbers are all setup in the transmission container.
 
-.env file is stored locally. Format for .env file:
+.env file contains personal credentials and is stored locally. Format for .env file:
 
 ```
 MOUNT_POINT=/path/to/nas  
