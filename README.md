@@ -1,6 +1,6 @@
 # plexberrypi
 
-My personal docker setup for a nas/seedbox running on a Raspberry Pi 4B 4gb.
+My personal docker setup for a nas/seedbox/media streaming setup running on a Raspberry Pi 4B 4gb.
 
 The Pi runs raspbian lite os with omv installed + Portainer to monitor docker stack.
 
