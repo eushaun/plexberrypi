@@ -35,7 +35,7 @@ services:
     image: lscr.io/linuxserver/jackett:latest
     container_name: jackett
     depends_on:
-      - transmission-openvpn
+      - transmission
     environment:
       - PUID=1000
       - PGID=1000
@@ -51,7 +51,7 @@ services:
     image: lscr.io/linuxserver/sonarr:latest
     container_name: sonarr-tv
     depends_on:
-      - transmission-openvpn
+      - transmission
     environment:
         - PUID=1000
         - PGID=1000
@@ -69,7 +69,7 @@ services:
     image: lscr.io/linuxserver/radarr:latest
     container_name: radarr
     depends_on:
-      - transmission-openvpn
+      - transmission
     environment:
         - PUID=1000
         - PGID=1000
@@ -97,6 +97,9 @@ services:
       - ${MOUNT_POINT}/media/tv:/tv
       - ${MOUNT_POINT}/media/movies:/movies
       - ${MOUNT_POINT}/media/anime:/anime
+    #  - ${MOUNT_POINT2}/tv:/tv2
+    #  - ${MOUNT_POINT2}/movies:/movies2
+    #  - ${MOUNT_POINT2}/anime:/anime2
     restart: unless-stopped
 
   watchtower:
