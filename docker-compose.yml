@@ -83,7 +83,7 @@ services:
     restart: unless-stopped
 
   plex:
-    image: ghcr.io/linuxserver/plex:arm32v7-latest 
+    image: lscr.io/linuxserver/plex:latest
     container_name: plex
     network_mode: host
     environment:
