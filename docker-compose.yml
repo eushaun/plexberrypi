@@ -4,6 +4,9 @@ services:
   transmission:
     image: haugene/transmission-openvpn
     container_name: transmission
+    dns:
+      - 1.1.1.1
+      - 1.0.0.1
     cap_add:
       - NET_ADMIN
     environment:
@@ -15,6 +18,7 @@ services:
       - TRANSMISSION_SEED_QUEUE_ENABLED=true
       - LOCAL_NETWORK=192.168.0.0/24
       - TZ=Australia/Sydney
+      - HEALTH_CHECK_HOST=github.com
     volumes:
       - ${MOUNT_POINT}/downloads:/storage/downloads
       - ${MOUNT_POINT}/config/transmission/data:/data
@@ -119,4 +123,29 @@ services:
       - TZ=Europe/London
     ports:
       - "${PORT:-8191}:8191"
-    restart: unless-stopped 
+    restart: unless-stopped
+    
+  jellyfin:
+    image: jellyfin/jellyfin
+    container_name: jellyfin
+    user: 1000:1000
+    network_mode: 'host'
+    volumes:
+      - ${MOUNT_POINT}/config:/config
+      - ${MOUNT_POINT}/cache:/cache
+      - type: bind
+        source: ${MOUNT_POINT}/media/tv
+        target: /tv
+      - type: bind
+        source: ${MOUNT_POINT}/media/movies
+        target: /movies
+      - type: bind
+        source: ${MOUNT_POINT}/media/anime
+        target: /anime
+    restart: 'unless-stopped'
+    # Optional - alternative address used for autodiscovery
+    #environment:
+    #  - JELLYFIN_PublishedServerUrl=http://example.com
+    # Optional - may be necessary for docker healthcheck to pass if running in host network mode
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
