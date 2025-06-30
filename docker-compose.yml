@@ -4,7 +4,6 @@ services:
   transmission:
     image: haugene/transmission-openvpn
     container_name: transmission
-
     cap_add:
       - NET_ADMIN
     environment:
@@ -17,6 +16,7 @@ services:
       - LOCAL_NETWORK=192.168.0.0/24
       - TZ=Australia/Sydney
       - HEALTH_CHECK_HOST=github.com
+    network_mode: host
     dns:
       - 1.1.1.1
       - 1.0.0.1
@@ -30,11 +30,11 @@ services:
         max-size: 10m
     ports:
       - 9091:9091
-      - 9117:9117
-      - 8989:8989
-      - 7878:7878
-      - 5055:5055
-      - 9696:9696
+      # - 9117:9117
+      # - 8989:8989
+      # - 7878:7878
+      # - 5055:5055
+      # - 9696:9696
     restart: unless-stopped
 
   prowlarr:
@@ -44,17 +44,16 @@ services:
       - PUID=1000
       - PGID=1000
       - TZ=Etc/UTC
-    network_mode: "container:transmission"
+    # network_mode: "container:transmission"
+    network_mode: host
     depends_on:
       - transmission
     volumes:
       - ${MOUNT_POINT}/config/prowlarr/data:/config
-    # ports:
-    #   - 9696:9696
+    ports:
+      - 9696:9696
     restart: unless-stopped
-
-
-
+    
   sonarr-tv:
     image: lscr.io/linuxserver/sonarr:latest
     container_name: sonarr-tv
@@ -64,12 +63,13 @@ services:
         - PUID=1000
         - PGID=1000
         - TZ=Australia/Sydney
-    network_mode: "container:transmission"
+    # network_mode: "container:transmission"
+    network_mode: host
     volumes:
         - ${MOUNT_POINT}/config/sonarr-tv:/config
         - ${MOUNT_POINT}:/storage
-    # ports:
-    #   - 8989:8989
+    ports:
+      - 8989:8989
     restart: unless-stopped
 
 
@@ -82,53 +82,15 @@ services:
         - PUID=1000
         - PGID=1000
         - TZ=Australia/Sydney
-    network_mode: "container:transmission"
+    # network_mode: "container:transmission"
+    network_mode: host
     volumes:
         - ${MOUNT_POINT}/config/radarr:/config
         - ${MOUNT_POINT}:/storage
-    # ports:
-    #    - 7878:7878
-    restart: unless-stopped
-
-  plex:
-    image: lscr.io/linuxserver/plex:latest
-    container_name: plex
-    network_mode: host
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=Australia/Sydney
-      - VERSION=docker
-      - PLEX_CLAIM=claim-HDLnBqPD8Tt5KhyNsP6v
-    volumes:
-      - ${MOUNT_POINT}/config/plex:/config
-      - ${MOUNT_POINT}/media/tv:/tv
-      - ${MOUNT_POINT}/media/movies:/movies
-      - ${MOUNT_POINT}/media/anime:/anime
-    #  - ${MOUNT_POINT2}/tv:/tv2
-    #  - ${MOUNT_POINT2}/movies:/movies2
-    #  - ${MOUNT_POINT2}/anime:/anime2
-    restart: unless-stopped
-
-  watchtower:
-    image: containrrr/watchtower
-    container_name: watchtower
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-
-  flaresolverr:
-    # DockerHub mirror flaresolverr/flaresolverr:latest
-    image: ghcr.io/flaresolverr/flaresolverr:latest
-    container_name: flaresolverr
-    environment:
-      - LOG_LEVEL=${LOG_LEVEL:-info}
-      - LOG_HTML=${LOG_HTML:-false}
-      - CAPTCHA_SOLVER=${CAPTCHA_SOLVER:-none}
-      - TZ=Europe/London
     ports:
-      - "${PORT:-8191}:8191"
+       - 7878:7878
     restart: unless-stopped
-    
+
   jellyfin:
     image: jellyfin/jellyfin
     container_name: jellyfin
@@ -152,3 +114,43 @@ services:
     # Optional - may be necessary for docker healthcheck to pass if running in host network mode
     extra_hosts:
       - 'host.docker.internal:host-gateway'
+
+  # plex:
+  #   image: lscr.io/linuxserver/plex:latest
+  #   container_name: plex
+  #   network_mode: host
+  #   environment:
+  #     - PUID=1000
+  #     - PGID=1000
+  #     - TZ=Australia/Sydney
+  #     - VERSION=docker
+  #     - PLEX_CLAIM=claim-HDLnBqPD8Tt5KhyNsP6v
+  #   volumes:
+  #     - ${MOUNT_POINT}/config/plex:/config
+  #     - ${MOUNT_POINT}/media/tv:/tv
+  #     - ${MOUNT_POINT}/media/movies:/movies
+  #     - ${MOUNT_POINT}/media/anime:/anime
+  #   #  - ${MOUNT_POINT2}/tv:/tv2
+  #   #  - ${MOUNT_POINT2}/movies:/movies2
+  #   #  - ${MOUNT_POINT2}/anime:/anime2
+  #   restart: unless-stopped
+
+  watchtower:
+    image: containrrr/watchtower
+    container_name: watchtower
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  flaresolverr:
+    # DockerHub mirror flaresolverr/flaresolverr:latest
+    image: ghcr.io/flaresolverr/flaresolverr:latest
+    container_name: flaresolverr
+    environment:
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - LOG_HTML=${LOG_HTML:-false}
+      - CAPTCHA_SOLVER=${CAPTCHA_SOLVER:-none}
+      - TZ=Europe/London
+    ports:
+      - "${PORT:-8191}:8191"
+    restart: unless-stopped
+    
